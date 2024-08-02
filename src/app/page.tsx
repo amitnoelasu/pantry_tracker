@@ -1,95 +1,149 @@
+"use client";
 import Image from "next/image";
 import styles from "./page.module.css";
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import { Button, Modal, TextField, Typography } from "@mui/material";
+import { useState, useEffect } from "react";
+import {firestore} from '@/app/firebase';
+import { collection, getDocs, query, doc, getDoc, deleteDoc, setDoc } from "firebase/firestore";
+import { InventoryItem } from "./types";
 
+
+const item= [
+  'tomato',
+  'potato',
+  'onion',
+  'garlic',
+  'ginger',
+  'carrot'
+]
 export default function Home() {
+  //state for invtory
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [open, setOpen] = useState<boolean>(false);
+  const [itemName, setItemName] = useState('');
+
+  const updateInventory =  async () => {
+    const snapshot = query(collection(firestore, 'inventory'));
+    const docs = await getDocs(snapshot);
+    const inventoryList : InventoryItem[] = [];
+    docs.forEach((doc) => {
+      inventoryList.push({
+          name: doc.id, // Use document ID as 'name'
+          quantity: doc.data().quantity,
+        });
+    })
+    setInventory(inventoryList);
+  }
+
+  const removeItem = async (item: string) => {
+    // console.log(item);
+    const docRef = doc(collection(firestore, 'inventory'), item);
+    // console.log(docRef);
+    const docSnap = await getDoc(docRef);
+    // console.log(docSnap);
+
+    if(docSnap.exists()) {
+      const {quantity} = docSnap.data();
+      if(quantity == 1) {
+        await deleteDoc(docRef);
+      } else {
+        await setDoc(docRef, {quantity: quantity - 1});
+      }
+    }
+
+    await updateInventory();
+  }
+
+
+  const addItem = async (item: string) => {
+    const docRef = doc(collection(firestore, 'inventory'), item);
+    const docSnap = await getDoc(docRef);
+
+    if(docSnap.exists()) {
+      const {quantity} = docSnap.data();
+      await setDoc(docRef, {quantity: quantity + 1});
+    } else {
+      await setDoc(docRef, {quantity: 1});
+    }
+
+    await updateInventory();
+  }
+
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+
+  useEffect(() => {
+    updateInventory()
+  }, []);
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <Box
+      width="100vw"
+      height="100vh"
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
+    >
+      <Modal open={open} onClose={handleClose}>
+      <Box position="absolute" top="50%" left="50%"  width={400} bgcolor="white" border="2px solid #000" boxShadow={24} p={4} display="flex" sx={{transform: 'translate(-50%,-50%)'}}flexDirection="column" gap={3}>
+          <Typography variant="h3">Add Item</Typography>
+          <Stack width="100%" direction="row" spacing={2}>
+            <TextField variant='outlined' fullWidth value={itemName} onChange={(e) => {setItemName(e.target.value)}}></TextField>
+            <Button onClick={(e) => {addItem(itemName); setItemName(''); handleClose()}}>Add</Button>
+          </Stack>
+      </Box>
+
+      </Modal>
+      <Button variant="outlined" onClick={()=>{handleOpen()}}>Add New Item</Button>
+      <Box
+        width="800px"
+        height="100px"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        bgcolor="#fff0f1"
+        mb={2} // Adds margin-bottom to separate heading from inventory items
+      >
+        <Typography variant="h3">Inventory Management System</Typography>
+          
+        
+      </Box>
+      <Stack
+        width="800px"
+        spacing={2} // Adds spacing between inventory items
+        overflow="auto"
+      >
+        {inventory.map((item) => (
+          <Box
+            key={item.name} // Ensure each item has a unique key
+            height="100px"
+            width="100%"
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            bgcolor="#f0f0f0"
+            padding={3}
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+            <Typography variant="h4" color="#333" textAlign="left">
+            {item.name} 
+            </Typography>
+            
+            <Typography variant="h4" color="#333" textAlign="center">
+            {item.quantity}
+            </Typography>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+            <Button variant="contained" onClick={(e)=>removeItem(item.name)}>Remove</Button>
+            
+          </Box>
+        ))}
+      </Stack>
+      
+      
+    </Box>
+      
   );
 }
