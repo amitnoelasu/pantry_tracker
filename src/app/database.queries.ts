@@ -1,7 +1,15 @@
-import db from './database.config';
+"use server";
+// import db from './database.config';
 import { TablesInsert, Tables, TablesUpdate } from './database.types';
 // Database["public"]["Tables"]["items"]["Insert"]
+import { createClient } from '@supabase/supabase-js';
+import { Database } from './database.types';
 
+// console.log(process.env);
+const db = createClient<Database>(
+  process.env.SUPABASE_URL as string,
+  process.env.SUPABASE_KEY as string
+)
 
 const addItemToDb = async (item: TablesInsert<"items">) => {
     try {
