@@ -5,10 +5,9 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { Button, Modal, TextField, Typography } from "@mui/material";
 import { useState, useEffect } from "react";
-import {firestore} from '@/app/firebase';
-import { collection, getDocs, query, doc, getDoc, deleteDoc, setDoc } from "firebase/firestore";
 import { InventoryItem } from "./types";
-
+import {getItems, deleteItem, addItemToDb} from './database.queries';
+import { TablesInsert, TablesUpdate } from "./database.types";
 
 const item= [
   'tomato',
@@ -25,48 +24,33 @@ export default function Home() {
   const [itemName, setItemName] = useState('');
 
   const updateInventory =  async () => {
-    const snapshot = query(collection(firestore, 'inventory'));
-    const docs = await getDocs(snapshot);
+    const docs = await getItems();
     const inventoryList : InventoryItem[] = [];
     docs.forEach((doc) => {
       inventoryList.push({
-          name: doc.id, // Use document ID as 'name'
-          quantity: doc.data().quantity,
+          id: doc.id,
+          name: doc.name,
+          quantity: doc.quantity,
         });
     })
     setInventory(inventoryList);
   }
 
-  const removeItem = async (item: string) => {
-    // console.log(item);
-    const docRef = doc(collection(firestore, 'inventory'), item);
-    // console.log(docRef);
-    const docSnap = await getDoc(docRef);
-    // console.log(docSnap);
+  const removeItem = async (item : InventoryItem) => {
 
-    if(docSnap.exists()) {
-      const {quantity} = docSnap.data();
-      if(quantity == 1) {
-        await deleteDoc(docRef);
-      } else {
-        await setDoc(docRef, {quantity: quantity - 1});
-      }
-    }
+    await deleteItem(item);
 
     await updateInventory();
   }
 
 
   const addItem = async (item: string) => {
-    const docRef = doc(collection(firestore, 'inventory'), item);
-    const docSnap = await getDoc(docRef);
-
-    if(docSnap.exists()) {
-      const {quantity} = docSnap.data();
-      await setDoc(docRef, {quantity: quantity + 1});
-    } else {
-      await setDoc(docRef, {quantity: 1});
+    const newItem: TablesInsert<"items"> = {
+      name: item,
+      quantity: 1
     }
+
+    await addItemToDb(newItem);
 
     await updateInventory();
   }
@@ -136,7 +120,7 @@ export default function Home() {
             {item.quantity}
             </Typography>
 
-            <Button variant="contained" onClick={(e)=>removeItem(item.name)}>Remove</Button>
+            <Button variant="contained" onClick={(e)=>removeItem(item)}>Remove</Button>
             
           </Box>
         ))}
