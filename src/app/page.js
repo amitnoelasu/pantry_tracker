@@ -1,13 +1,10 @@
 "use client";
-import Image from "next/image";
-import styles from "./page.module.css";
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { Button, Modal, TextField, Typography } from "@mui/material";
 import { useState, useEffect } from "react";
 import {firestore} from '@/app/firebase';
 import { collection, getDocs, query, doc, getDoc, deleteDoc, setDoc } from "firebase/firestore";
-import { InventoryItem } from "./types";
 
 
 const item= [
@@ -20,14 +17,14 @@ const item= [
 ]
 export default function Home() {
   //state for invtory
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [open, setOpen] = useState<boolean>(false);
+  const [inventory, setInventory] = useState([]);
+  const [open, setOpen] = useState(false);
   const [itemName, setItemName] = useState('');
 
   const updateInventory =  async () => {
     const snapshot = query(collection(firestore, 'inventory'));
     const docs = await getDocs(snapshot);
-    const inventoryList : InventoryItem[] = [];
+    const inventoryList = [];
     docs.forEach((doc) => {
       inventoryList.push({
           name: doc.id, // Use document ID as 'name'
@@ -37,7 +34,7 @@ export default function Home() {
     setInventory(inventoryList);
   }
 
-  const removeItem = async (item: string) => {
+  const removeItem = async (item) => {
     // console.log(item);
     const docRef = doc(collection(firestore, 'inventory'), item);
     // console.log(docRef);
@@ -57,7 +54,7 @@ export default function Home() {
   }
 
 
-  const addItem = async (item: string) => {
+  const addItem = async (item) => {
     const docRef = doc(collection(firestore, 'inventory'), item);
     const docSnap = await getDoc(docRef);
 
