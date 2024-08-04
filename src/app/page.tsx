@@ -6,27 +6,33 @@ import Stack from '@mui/material/Stack';
 import { Button, Modal, TextField, Typography } from "@mui/material";
 import { useState, useEffect } from "react";
 import { InventoryItem } from "./types";
-import {getItems, deleteItem, addItemToDb} from './database.queries';
+import {getItems, deleteItem, addItemToDb, getSearchItems} from './database.queries';
 import { TablesInsert, TablesUpdate } from "./database.types";
+import Search from "./ui/search";
+import Table from "./ui/table";
 
-const item= [
-  'tomato',
-  'potato',
-  'onion',
-  'garlic',
-  'ginger',
-  'carrot'
-]
-export default function Home() {
+
+
+
+export default function Page({
+  searchParams,
+}: {
+  searchParams?: {
+    item?: string;
+  };
+}) {
   //state for invtory
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [open, setOpen] = useState<boolean>(false);
   const [itemName, setItemName] = useState('');
 
   const updateInventory =  async () => {
-    const docs = await getItems();
+    let docs = await getItems();
     console.log(docs);
     const inventoryList : InventoryItem[] = [];
+    if(searchParams?.item) {
+      docs = await getSearchItems(prefix);
+    } 
     docs.forEach((doc) => {
       inventoryList.push({
           id: doc.id,
@@ -34,16 +40,14 @@ export default function Home() {
           quantity: doc.quantity,
         });
     })
+    
+    
     setInventory(inventoryList);
     // console.log('inventoryList', inventory);
   }
 
-  const removeItem = async (item : InventoryItem) => {
 
-    await deleteItem(item);
-
-    await updateInventory();
-  }
+  
 
 
   const addItem = async (item: string) => {
@@ -53,7 +57,6 @@ export default function Home() {
     }
 
     await addItemToDb(newItem);
-
     await updateInventory();
   }
 
@@ -64,7 +67,16 @@ export default function Home() {
 
   useEffect(() => {
     updateInventory()
-  }, []);
+  }, [searchParams?.item]);
+
+
+  const prefix = searchParams?.item || '';
+
+  const getSearchResults = async (prefix: string) => {
+    
+  }
+
+
   return (
     <Box
       width="100vw"
@@ -76,6 +88,7 @@ export default function Home() {
     >
       <Modal open={open} onClose={handleClose}>
       <Box position="absolute" top="50%" left="50%"  width={400} bgcolor="white" border="2px solid #000" boxShadow={24} p={4} display="flex" sx={{transform: 'translate(-50%,-50%)'}}flexDirection="column" gap={3}>
+          
           <Typography variant="h3">Add Item</Typography>
           <Stack width="100%" direction="row" spacing={2}>
             <TextField variant='outlined' fullWidth value={itemName} onChange={(e) => {setItemName(e.target.value)}}></TextField>
@@ -95,38 +108,11 @@ export default function Home() {
         mb={2} // Adds margin-bottom to separate heading from inventory items
       >
         <Typography variant="h3">Inventory Management System</Typography>
-          
+        <Search placeholder="Search for an item" />
         
       </Box>
-      <Stack
-        width="800px"
-        spacing={2} // Adds spacing between inventory items
-        overflow="auto"
-      >
-        {inventory.map((item) => (
-          <Box
-            key={item.name} // Ensure each item has a unique key
-            height="100px"
-            width="100%"
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            bgcolor="#f0f0f0"
-            padding={3}
-          >
-            <Typography variant="h4" color="#333" textAlign="left">
-            {item.name} 
-            </Typography>
-            
-            <Typography variant="h4" color="#333" textAlign="center">
-            {item.quantity}
-            </Typography>
-
-            <Button variant="contained" onClick={(e)=>removeItem(item)}>Remove</Button>
-            
-          </Box>
-        ))}
-      </Stack>
+      
+      <Table inventory={inventory} onDelete={updateInventory}/>
       
       
     </Box>
