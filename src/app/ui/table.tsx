@@ -1,9 +1,7 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import { Button, Modal, TextField, Typography } from "@mui/material";
-import { useState, useEffect } from "react";
+import { Button, Typography } from "@mui/material";
 import { InventoryItem } from "../types";
 import { deleteItem } from "../database.queries";
 
