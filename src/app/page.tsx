@@ -25,6 +25,7 @@ export default function Home() {
 
   const updateInventory =  async () => {
     const docs = await getItems();
+    console.log(docs);
     const inventoryList : InventoryItem[] = [];
     docs.forEach((doc) => {
       inventoryList.push({
@@ -34,6 +35,7 @@ export default function Home() {
         });
     })
     setInventory(inventoryList);
+    // console.log('inventoryList', inventory);
   }
 
   const removeItem = async (item : InventoryItem) => {

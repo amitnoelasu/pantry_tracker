@@ -13,7 +13,8 @@ const db = createClient<Database>(
 
 const addItemToDb = async (item: TablesInsert<"items">) => {
     try {
-        const { data, error } = await db.from("items").select().eq('name', item.name as string);
+        console.log(item);
+        const { data, error } = await db.from("items").select().eq('name', item.name.trim() as string);
         
         if(data && data?.length > 0) {
             const newQuantity = data[0].quantity + 1;
@@ -34,12 +35,11 @@ const addItemToDb = async (item: TablesInsert<"items">) => {
 
 const getItems = async () => {
     try {
-        const { data, error } = await db.from("items").select();
-        
+        const { data, error } = await db.from("items").select("*");
         if (error) {
             throw new Error(`Error retrieveing items`);
         }
-
+        // console.log("im in getItems", data)
         return data;
     } catch (error) {
         console.error(error);
@@ -52,6 +52,7 @@ const deleteItem = async (item: TablesUpdate<"items">) => {
         const { data, error } = await db.from("items").select().eq('id', item.id as number);
         
         if(data && data.length > 0) {
+            // console.log("existing item", data);
             const newQuantity = data[0].quantity - 1;
             if(newQuantity <= 0) {
                 const {error} = await db.from("items").delete().eq('id', data[0].id); //using id instead of name
