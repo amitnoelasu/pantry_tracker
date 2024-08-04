@@ -72,4 +72,19 @@ const deleteItem = async (item: TablesUpdate<"items">) => {
 
 }
 
-export {addItemToDb, getItems, deleteItem};
+const getSearchItems = async (prefix: string) => {
+    try {
+        console.log("searching for prefix")
+        const { data, error } = await db.from("items").select("*").ilike('name',`${prefix}%`);
+        if (error) {
+            throw new Error(`Error retrieveing items`);
+        }
+        console.log("im in searchItems", data)
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export {addItemToDb, getItems, deleteItem, getSearchItems};
