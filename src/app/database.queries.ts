@@ -1,27 +1,26 @@
 "use server";
-// import db from './database.config';
 import { TablesInsert, Tables, TablesUpdate } from './database.types';
-// Database["public"]["Tables"]["items"]["Insert"]
 import { createClient } from '@supabase/supabase-js';
 import { Database } from './database.types';
-
-// console.log(process.env);
+import { revalidatePath } from 'next/cache';
 const db = createClient<Database>(
   process.env.SUPABASE_URL as string,
   process.env.SUPABASE_KEY as string
 )
 
-const addItemToDb = async (item: TablesInsert<"items">) => {
+const addItemToDb = async (itemName: string) => {
     try {
-        console.log(item);
-        const { data, error } = await db.from("items").select().eq('name', item.name.trim() as string);
+        // console.log(itemName);
+        const { data, error } = await db.from("items").select().eq('name', itemName.trim() as string);
         
         if(data && data?.length > 0) {
             const newQuantity = data[0].quantity + 1;
             const {error} = await db.from("items").update({quantity: newQuantity}).eq('id', data[0].id); //using id instead of name
         } else {
             // Insert the item into the "items" table
-            const { data, error } = await db.from("items").insert(item);
+            const newItem : TablesInsert<"items"> = {name: itemName, quantity: 1};
+            // console.log("newItem", newItem);
+            const { data, error } = await db.from("items").insert(newItem);
             
             if (error) {
                 throw new Error(`Error adding new item: ${error.message}`);
@@ -47,10 +46,10 @@ const getItems = async () => {
     }
 }
 
-const deleteItem = async (item: TablesUpdate<"items">) => {
+const deleteItem = async (itemId: number) => {
     try {
-        const { data, error } = await db.from("items").select().eq('id', item.id as number);
-        
+        const { data, error } = await db.from("items").select().eq('id', itemId as number);
+        // console.log("item data", data);
         if(data && data.length > 0) {
             // console.log("existing item", data);
             const newQuantity = data[0].quantity - 1;
@@ -62,7 +61,7 @@ const deleteItem = async (item: TablesUpdate<"items">) => {
             
             return data;
         } else {
-            throw new Error(`Error updating item ${item.name}`);
+            throw new Error(`Error updating item ${itemId}`);
         }
         
     } catch (error) {
@@ -74,12 +73,12 @@ const deleteItem = async (item: TablesUpdate<"items">) => {
 
 const getSearchItems = async (prefix: string) => {
     try {
-        console.log("searching for prefix")
-        const { data, error } = await db.from("items").select("*").ilike('name',`${prefix}%`);
+       
+        const { data, error } = await db.from("items").select("*").ilike('name',`${prefix}%`).order('quantity', {ascending: false});
         if (error) {
             throw new Error(`Error retrieveing items`);
         }
-        console.log("im in searchItems", data)
+        revalidatePath('/');
         return data;
     } catch (error) {
         console.error(error);
