@@ -32,11 +32,6 @@ export default async function Page({
       backgroundRepeat: "no-repeat",
       backgroundSize: "cover",
       }}>
-    {/* <Image
-        src="/background_food_image.jpg"
-        fill
-        alt="Picture of the author"
-      /> */}
       <Box sx={{borderRadius:"50px"}}>
         <Box width="800px"  height="220px"  display="flex"  justifyContent="center" alignItems="center"  color="white" sx={{
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -44,7 +39,7 @@ export default async function Page({
         }}>
           <Typography variant="h3" color="#4E342E" border={2} padding={2} >Pantry Tracker</Typography>
         </Box>
-        <Box width="800px" height="100px" display="flex" justifyContent="space-between"  alignItems="center" bgcolor="#ffffff" padding={5}>
+        <Box width="800px" height="100px" display="flex" justifyContent="space-between"  alignItems="center" bgcolor="#ffffff" paddingInlineStart={10} paddingInlineEnd={14}>
           <Search placeholder="Search for an item" />
           <AddNewItem />
         </Box>

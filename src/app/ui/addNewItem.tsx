@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal, Typography, Button, Box, TextField } from "@mui/material";
+import { Modal, Typography, Button, Box, TextField, Stack } from "@mui/material";
 import { FormEvent, useState } from "react";
 // import { AddItem } from "./buttons";
 import { handleAddItemAction } from "../actions/actions";
@@ -20,7 +20,7 @@ const style = {
 export default function AddNewItem() {
     const [open, setOpen] = useState(false);
     const [itemName, setItemName] = useState("");
-    const handleClose = () => setOpen(false);
+    const handleClose = () =>  {setOpen(false); setItemName("")}
     const handleOpen = () => setOpen(true);
 
     const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,7 +29,7 @@ export default function AddNewItem() {
 
     return (
         <Box>
-        <Button variant="outlined" onClick={handleOpen}>Add New Item</Button>
+        <Button variant="outlined" onClick={handleOpen}>Add Item</Button>
         <Modal
         open={open}
         onClose={handleClose}
@@ -38,13 +38,16 @@ export default function AddNewItem() {
         >
         <Box sx={style}>
             <Typography id="modal-modal-title" variant="h6" component="h2">
-            Add an item
             </Typography>
             <form action={handleAddItemAction}>
-                <TextField variant="outlined" name="itemName" value={itemName} onChange={handleOnChange}></TextField>
-                <Button variant="outlined" type="submit">
-                    Add New Item
-                </Button>
+                <Box flexDirection="column" >
+                    <Box padding={2}><TextField variant="outlined" placeholder="Enter item name" name="itemName" value={itemName} onChange={handleOnChange}></TextField></Box>
+                    <Box padding={2}><Button variant="outlined" type="submit">
+                        Add New Item
+                    </Button></Box>
+                    
+                </Box>
+                
             </form>
             
         </Box>

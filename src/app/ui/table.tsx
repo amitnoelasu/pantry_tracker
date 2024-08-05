@@ -23,7 +23,7 @@ export default async function InventoryTable({prefix}: {prefix: string}) {
     // console.log("inventory", inventory);
     return(
 
-      <Box width="800px"overflow="auto" >
+      <Box width="800px" height="400px" overflow="auto">
       <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 , }} aria-label="simple table">
         <TableHead>

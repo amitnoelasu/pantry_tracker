@@ -25,13 +25,16 @@ export default function Search({ placeholder }: { placeholder: string }) {
     replace(`${pathname}?${params.toString()}`);
   }, 300);
   return (
-  <TextField variant="filled"
+    <Box>
+      <TextField variant="filled"
 
 placeholder={placeholder}
 onChange={(e) => {
   handleSearch(e.target.value);
 }}
 defaultValue={searchParams.get('item')?.toString()} />
+    </Box>
+  
 
 
   );
