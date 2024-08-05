@@ -5,7 +5,7 @@ import { useSearchParams, usePathname, useRouter  } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
 
 import SearchIcon from '@mui/icons-material/Search';
-import { TextField } from '@mui/material';
+import { Box, Stack, TextField } from '@mui/material';
 
 export default function Search({ placeholder }: { placeholder: string }) {
   const searchParams = useSearchParams();
@@ -25,20 +25,14 @@ export default function Search({ placeholder }: { placeholder: string }) {
     replace(`${pathname}?${params.toString()}`);
   }, 300);
   return (
-    <div>
-      <label >
-        Search
-      </label>
-      <TextField id="outlined-basic" variant="outlined"
+  <TextField variant="filled"
 
-        placeholder={placeholder}
-        onChange={(e) => {
-          handleSearch(e.target.value);
-        }}
-        defaultValue={searchParams.get('item')?.toString()}
+placeholder={placeholder}
+onChange={(e) => {
+  handleSearch(e.target.value);
+}}
+defaultValue={searchParams.get('item')?.toString()} />
 
-      />
-      <SearchIcon/>
-    </div>
+
   );
 }

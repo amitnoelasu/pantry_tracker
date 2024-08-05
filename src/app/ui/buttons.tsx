@@ -9,7 +9,7 @@ export function RemoveItem({item}:{item: InventoryItem}) {
     return(
         <form action={handleDeleteAction}>
             <input type="hidden" name="itemId" value={item.id} />
-            <button type="submit">Delete</button>
+            <Button variant="outlined" type="submit">Delete</Button>
         </form>
     );
 }
