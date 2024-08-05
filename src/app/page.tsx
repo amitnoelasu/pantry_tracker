@@ -1,121 +1,57 @@
-"use client";
-import Image from "next/image";
-import styles from "./page.module.css";
+"use server";
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import { Button, Modal, TextField, Typography } from "@mui/material";
-import { useState, useEffect } from "react";
-import { InventoryItem } from "./types";
-import {getItems, deleteItem, addItemToDb, getSearchItems} from './database.queries';
-import { TablesInsert, TablesUpdate } from "./database.types";
+import { Typography } from "@mui/material";
 import Search from "./ui/search";
-import Table from "./ui/table";
+import InventoryTable from "./ui/table";
+import { Suspense } from 'react';
+import AddNewItem from './ui/addNewItem';
 
 
 
-
-export default function Page({
+import Image from 'next/image';
+const imagePath = './background_food_image.jpg';
+const pantryImagePath = './pantry_image.jpg';
+export default async function Page({
   searchParams,
 }: {
   searchParams?: {
     item?: string;
   };
 }) {
-  //state for invtory
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [open, setOpen] = useState<boolean>(false);
-  const [itemName, setItemName] = useState('');
-
-  const updateInventory =  async () => {
-    let docs = await getItems();
-    console.log(docs);
-    const inventoryList : InventoryItem[] = [];
-    if(searchParams?.item) {
-      docs = await getSearchItems(prefix);
-    } 
-    docs.forEach((doc) => {
-      inventoryList.push({
-          id: doc.id,
-          name: doc.name,
-          quantity: doc.quantity,
-        });
-    })
-    
-    
-    setInventory(inventoryList);
-    // console.log('inventoryList', inventory);
-  }
-
-
   
-
-
-  const addItem = async (item: string) => {
-    const newItem: TablesInsert<"items"> = {
-      name: item,
-      quantity: 1
-    }
-
-    await addItemToDb(newItem);
-    await updateInventory();
-  }
-
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-
-  useEffect(() => {
-    updateInventory()
-  }, [searchParams?.item]);
-
-
   const prefix = searchParams?.item || '';
-
-  const getSearchResults = async (prefix: string) => {
-    
-  }
 
 
   return (
-    <Box
-      width="100vw"
-      height="100vh"
-      display="flex"
-      flexDirection="column"
-      justifyContent="center"
-      alignItems="center"
-    >
-      <Modal open={open} onClose={handleClose}>
-      <Box position="absolute" top="50%" left="50%"  width={400} bgcolor="white" border="2px solid #000" boxShadow={24} p={4} display="flex" sx={{transform: 'translate(-50%,-50%)'}}flexDirection="column" gap={3}>
-          
-          <Typography variant="h3">Add Item</Typography>
-          <Stack width="100%" direction="row" spacing={2}>
-            <TextField variant='outlined' fullWidth value={itemName} onChange={(e) => {setItemName(e.target.value)}}></TextField>
-            <Button onClick={(e) => {addItem(itemName); setItemName(''); handleClose()}}>Add</Button>
-          </Stack>
-      </Box>
-
-      </Modal>
-      <Button variant="outlined" onClick={()=>{handleOpen()}}>Add New Item</Button>
-      <Box
-        width="800px"
-        height="100px"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        bgcolor="#fff0f1"
-        mb={2} // Adds margin-bottom to separate heading from inventory items
-      >
-        <Typography variant="h3">Inventory Management System</Typography>
-        <Search placeholder="Search for an item" />
+    <>
+    
+    
+    <Box width="100vw" height="100vh" display="flex" flexDirection="column"  justifyContent="center"  alignItems="center" 
+    sx={{
+      backgroundImage:`url(${imagePath})`,
+      backgroundRepeat: "no-repeat",
+      backgroundSize: "cover",
+      }}>
+      <Box sx={{borderRadius:"50px"}}>
+        <Box width="800px"  height="220px"  display="flex"  justifyContent="center" alignItems="center"  color="white" sx={{
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(10px)', 
+        }}>
+          <Typography variant="h3" color="#4E342E" border={2} padding={2} >Pantry Tracker</Typography>
+        </Box>
+        <Box width="800px" height="100px" display="flex" justifyContent="space-between"  alignItems="center" bgcolor="#ffffff" paddingInlineStart={10} paddingInlineEnd={14}>
+          <Search placeholder="Search for an item" />
+          <AddNewItem />
+        </Box>
         
+      
+        <InventoryTable prefix={prefix}/>
       </Box>
       
-      <Table inventory={inventory} onDelete={updateInventory}/>
       
       
     </Box>
+    </>
       
   );
 }
